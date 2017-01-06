@@ -42,16 +42,16 @@ def comment_has_badrep(jsonData,uttID,repto):
 	return False
 	
 
-ID_higher_limit = 17500
-ID_lower_limit = 1
+fjsonfilelist = open("readjsonFileIDList.txt", 'r').read().split(",")
+fjsonfilelist.pop()
 dateDIR = "2ch_corpus"
-writeDIR = "2ch_text_badcomment"
-badwordfile = "badwordlist.txt"
+writeDIR = "2ch_text_comment_ExDic2"
+badwordfile = "badword/badword2_Cut.txt"
 fbad = open(badwordfile, 'r')
-badwordlist = (fbad.read()).split(",")
+badwordlist = (fbad.read()).split("\n")
+badwordlist.pop()
 
-for ID in range(ID_lower_limit,ID_higher_limit):
-	ID = str(ID)
+for ID in fjsonfilelist:
 	try:
 		f = open(dateDIR + "/sred" + ID +'.json', 'r')
 	except:
@@ -63,20 +63,23 @@ for ID in range(ID_lower_limit,ID_higher_limit):
 
 	i = 1
 	dat_url = jsonData["dat_url"]
-	sred_url = "http://" + jsonData["server"] + ".open2ch.net/test/read.cgi/" + jsonData["Genre"] + "/" + jsonData["url"] + "/l1000"
+	print dat_url
+	#sred_url = "http://" + strjsonData["server"] + ".open2ch.net/test/read.cgi/" + jsonData["Genre"] + "/" + jsonData["url"] + "/l1000"
 	#print dat_url + "\n"
-	print sred_url
+	#print sred_url
 	sred_ID = jsonData["url"]
 	Genre = jsonData["Genre"]
-	fw.write("sred_url:" + sred_url + "\n")
-	fw.write("dat_url:" + jsonData["dat_url"].encode("utf-8") + "\nGenre:" + Genre.encode("utf-8") + "\ntitle:" + jsonData["title"].encode("utf-8") + "\n")
+	#fw.write("sred_url:" + sred_url + "\n")
+	#fw.write("dat_url:" + jsonData["dat_url"].encode("utf-8") + "\nGenre:" + Genre.encode("utf-8") + "\ntitle:" + jsonData["title"].encode("utf-8") + "\n")
 	fw.write("\n---------------------------------------------\n")
 	while(1):
 		uttID = str(i)
 		if(uttID in jsonData):
 			(detected_text,repto) = detect_text(jsonData[uttID])
 			if(comment_has_badrep(jsonData,uttID,repto)):
-				fw.write("comment:\n" + detected_text.encode("utf-8") + "\n---------------------------------------------\n")
+				fw.write("\n ● comment:\n" + detected_text.encode("utf-8") + "\n---------------------------------------------\n")
+			else:
+				fw.write("\n ○ comment:\n" + detected_text.encode("utf-8") + "\n---------------------------------------------\n")
 		else:
 			break
 		i = i + 1

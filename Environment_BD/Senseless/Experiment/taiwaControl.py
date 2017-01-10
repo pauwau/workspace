@@ -5,7 +5,7 @@ u"""Docomoの雑談対話APIを使ってチャットできるスクリプト
 """
  
 import sys
-import urllib2
+import urllib, urllib.request, urllib.error
 import json
 import datetime
 
@@ -13,8 +13,9 @@ todaydetail  =    datetime.datetime.today()
 date = (str(todaydetail.month) + "_" + str(todaydetail.day) + "_" + str(todaydetail.hour) + "_" + str(todaydetail.minute))
 
 APP_URL = 'https://api.apigw.smt.docomo.ne.jp/dialogue/v1/dialogue'
-fw = open("taiwalog_" + date + ".txt","w")
- 
+#fw = open("taiwalog_" + date + ".txt","w")
+
+
 class DocomoChat(object):
     u"""Docomoの雑談対話APIでチャット"""
  
@@ -26,22 +27,24 @@ class DocomoChat(object):
     def __send_message(self, input_message='', custom_dict=None):
         req_data = {'utt': input_message}
         if self.context:
-            req_data['context'] = self.context
+            req_data['context'] = self.context.decode("utf-8")
         if self.mode:
-            req_data['mode'] = self.mode
+            req_data['mode'] = self.mode.decode("utf-8")
         if custom_dict:
             req_data.update(custom_dict)
-        request = urllib2.Request(self.api_url, json.dumps(req_data))
+        print(req_data)
+        data = json.dumps(req_data).encode("utf-8")
+        request = urllib.request.Request(self.api_url, data)
         request.add_header('Content-Type', 'application/json')
         try:
-            response = urllib2.urlopen(request)
+            response = urllib.request.urlopen(request).read().decode("utf-8")
         except Exception as e:
-            print e
+            print (str(e))
             sys.exit()
         return response
  
     def __process_response(self, response):
-        resp_json = json.load(response)
+        resp_json = json.loads(response)
         self.context = resp_json['context'].encode('utf-8')
         self.mode    = resp_json['mode'].encode('utf-8')
         return resp_json['utt'].encode('utf-8')
@@ -61,14 +64,14 @@ def main():
     api_key = '564f5a7a34756c7a422f31644633622e6e64327169326c452f2f433045332e6c3559727351307763656a42'
     chat = DocomoChat(api_key)
     resp = chat.set_name('pau', 'ぱう')
-    print '相手　 : %s'%(resp)
+    print ('相手　 : %s'%(resp))
     fw.write("s:" + resp + "\n")
     message = ''
     while (message != 'バイバイ' or message != "ばいばい" or message != "exit"):
         message = raw_input('あなた : ')
         fw.write("u:" + message + "\n")
         resp = chat.send_and_get(message)
-        print '相手　 : %s'%(resp)
+        print ('相手　 : %s'%(resp))
         fw.write("s:" + resp + "\n")
  
  
